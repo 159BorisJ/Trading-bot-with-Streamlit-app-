@@ -1,0 +1,11 @@
+Potrebujem vytvoriť stratégiu, ktorá bude robiť menej obchodov ale tie budú dávať profit a potrebujem obchodovať
+s viacerými akciami naraz.
+
+Bolo by lepšie investovať s cryptom alebo s akciami ?
+
+Nápad pre macd stratégiu. Znižim krátku ema a zvýšim dlhú ema a tým znížim pravdepodobnosť na pretnutie. Ak sa však
+pretnú, bude to znamenať silný trend. Pre kontrolu predajov však ostanem sledovať pretnutie neupravených ema línií.
+
+Upraviť kód tak, aby sme iba zadali zoznam akcií a program už sám otestuje všetky postupne
+
+Je RSI ozaj tak na nič alebo ho iba zle používam ? (Spraviť si prieskum)
