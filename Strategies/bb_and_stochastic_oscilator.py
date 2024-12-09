@@ -7,7 +7,7 @@ class BBAndStochOscStrategy(bt.Strategy):
     params = (
         ("period", 20),
         ("devfactor", 2),
-        ("order_percentage", 0.95),
+        ("order_percentage", 1),
         ('k_period', 14),  # Perioda pre výpočet %K
         ('d_period', 3),  # Perioda pre výpočet %D (hladká čiara)
         ('upper_limit', 80),  # Hranica pre prekúpenosť

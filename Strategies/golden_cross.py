@@ -6,7 +6,7 @@ class GoldenCross(bt.Strategy):
     params = (
         ("fast", 50),
         ("slow", 200),
-        ("order_percentage", 0.95),
+        ("order_percentage", 1),
     )
 
     def __init__(self):

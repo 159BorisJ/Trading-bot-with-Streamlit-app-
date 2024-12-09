@@ -2,7 +2,8 @@ import yfinance as yf
 import pandas as pd
 import os
 
-stocks = ["IBM", "GE", "KO", "MCD", "PG", "PEP", "JNJ", "XOM", "WMT"]
+stocks = ["AAPL", "AMZN", "BA", "CVX", "GME", "INTC", "NVDA", "ORCL", "T", "TSLA", "XOM", "IBM", "GE", "KO", "MCD", "PG",
+          "PEP", "JNJ", "WMT"]
 
 cryptos = ["BTC-USD", "ETH-USD", "BNB-USD", "XRP-USD", "ADA-USD", "SOL-USD", "DOGE-USD", "DOT-USD", "LTC-USD", "AVAX-USD",
            "MATIC-USD", "UNI-USD", "ATOM-USD", "FTM-USD"]
@@ -22,7 +23,7 @@ if comodities == stocks:
     end_date = "2014-12-31"
 elif comodities == cryptos:
     start_date = "2013-01-01"
-    end_date = "2023-12-31"
+    end_date = "2024-12-01"
 
 
 for c in comodities:
@@ -50,7 +51,7 @@ for c in comodities:
     output_directory = f"Data-{directory_name}/"
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
-    output_filename = os.path.join(output_directory, f"{ticker_symbol}_{start_date}-{end_date}.csv")
+    output_filename = os.path.join(output_directory, f"{ticker_symbol}.csv")
     data.to_csv(output_filename, index=False, header=True)
 
     # Odstránenie druhého riadku zo súboru

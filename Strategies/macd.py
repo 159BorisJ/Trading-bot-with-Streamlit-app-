@@ -7,7 +7,7 @@ class MACD(bt.Strategy):
         ("fast", 12),
         ("slow", 26),
         ("signal", 9),
-        ("order_percentage", 0.95),
+        ("order_percentage", 1),
         ("ticker", "ORCL"),
         ("stop_loss", 0.95),
         ("take_profit", 1.10),

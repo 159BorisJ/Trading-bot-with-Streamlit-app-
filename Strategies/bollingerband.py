@@ -4,7 +4,7 @@ import math
 
 
 class BolingerBandStrategy(bt.Strategy):
-    params = (("period", 20), ("devfactor", 2), ("order_percentage", 0.95))
+    params = (("period", 20), ("devfactor", 2), ("order_percentage", 1))
 
     def __init__(self):
         self.bb = BollingerBands(period=self.params.period, devfactor=self.params.devfactor)
