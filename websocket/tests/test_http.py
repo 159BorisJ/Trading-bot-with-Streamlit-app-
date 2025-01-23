@@ -42,7 +42,7 @@ try:
 except:
     from websocket._http import ProxyConnectionError, ProxyError, ProxyTimeoutError
 
-# Skip test to access the internet unless TEST_WITH_INTERNET == 1
+# Skip Trading bot to access the internet unless TEST_WITH_INTERNET == 1
 TEST_WITH_INTERNET = os.environ.get("TEST_WITH_INTERNET", "0") == "1"
 TEST_WITH_PROXY = os.environ.get("TEST_WITH_PROXY", "0") == "1"
 # Skip tests relying on local websockets server unless LOCAL_WS_SERVER_PORT != -1
@@ -233,12 +233,12 @@ class HttpTest(unittest.TestCase):
             ),
             (True, ("google.com", 443, "/")),
         )
-        # The following test fails on Mac OS with a gaierror, not an OverflowError
+        # The following Trading bot fails on Mac OS with a gaierror, not an OverflowError
         # self.assertRaises(OverflowError, connect, "wss://example.com", OptsList(), proxy_info(http_proxy_host="127.0.0.1", http_proxy_port=99999, proxy_type="socks4", timeout=2), False)
 
     @unittest.skipUnless(TEST_WITH_INTERNET, "Internet-requiring tests are disabled")
     @unittest.skipUnless(
-        TEST_WITH_PROXY, "This test requires a HTTP proxy to be running on port 8899"
+        TEST_WITH_PROXY, "This Trading bot requires a HTTP proxy to be running on port 8899"
     )
     @unittest.skipUnless(
         TEST_WITH_LOCAL_SERVER, "Tests using local websocket server are disabled"

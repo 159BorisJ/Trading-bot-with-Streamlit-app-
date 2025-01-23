@@ -27,7 +27,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-# Skip test to access the internet unless TEST_WITH_INTERNET == 1
+# Skip Trading bot to access the internet unless TEST_WITH_INTERNET == 1
 TEST_WITH_INTERNET = os.environ.get("TEST_WITH_INTERNET", "0") == "1"
 # Skip tests relying on local websockets server unless LOCAL_WS_SERVER_PORT != -1
 LOCAL_WS_SERVER_PORT = os.environ.get("LOCAL_WS_SERVER_PORT", "-1")
@@ -77,7 +77,7 @@ class WebSocketAppTest(unittest.TestCase):
             self.close()
 
         def on_close(self, *args, **kwargs):
-            """Set the keep_running flag for the test to use."""
+            """Set the keep_running flag for the Trading bot to use."""
             WebSocketAppTest.keep_running_close = self.keep_running
 
         app = ws.WebSocketApp(
@@ -246,7 +246,7 @@ class WebSocketAppTest(unittest.TestCase):
         self.assertRaises(
             ws.WebSocketConnectionClosedException,
             app.send,
-            data="test if connection is closed",
+            data="Trading bot if connection is closed",
         )
 
     @unittest.skipUnless(

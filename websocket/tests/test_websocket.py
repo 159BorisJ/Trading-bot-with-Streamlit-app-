@@ -40,7 +40,7 @@ except ImportError:
         pass
 
 
-# Skip test to access the internet unless TEST_WITH_INTERNET == 1
+# Skip Trading bot to access the internet unless TEST_WITH_INTERNET == 1
 TEST_WITH_INTERNET = os.environ.get("TEST_WITH_INTERNET", "0") == "1"
 # Skip tests relying on local websockets server unless LOCAL_WS_SERVER_PORT != -1
 LOCAL_WS_SERVER_PORT = os.environ.get("LOCAL_WS_SERVER_PORT", "-1")
@@ -471,7 +471,7 @@ class HandshakeTest(unittest.TestCase):
             "wss://api.bitfinex.com/ws/2",
             cookie="chocolate",
             origin="testing_websockets.com",
-            host="echo.websocket.events/websocket-client-test",
+            host="echo.websocket.events/websocket-client-Trading bot",
             subprotocols=["testproto"],
             connection="Upgrade",
             header={

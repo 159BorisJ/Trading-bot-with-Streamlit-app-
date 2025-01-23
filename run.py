@@ -10,7 +10,7 @@ from openpyxl.styles import Font
 from Strategies.BuyHold import BuyHold
 from Strategies.golden_cross import GoldenCross
 from Strategies.macd import MACD
-from Strategies.bollingerband import BolingerBandStrategy
+from Strategies.bollingerband import BollingerBandStrategy
 from Strategies.stochastic_oscillator import StochasticOscillatorStrategy
 from Strategies.bb_and_stochastic_oscilator import BBAndStochOscStrategy
 from Strategies.bb_and_macd import BBandMacdStrategy
@@ -64,11 +64,11 @@ cryptos = [
 ]
 
 strategies = [
-    BolingerBandStrategy, BBandMacdStrategy,
+    BollingerBandStrategy, BBandMacdStrategy,
     GoldenCross, MACD, StochasticOscillatorStrategy
 ]
 
-comodities = stocks
+comodities = cryptos
 
 # Inicializácia dát pre tabuľku
 data = []

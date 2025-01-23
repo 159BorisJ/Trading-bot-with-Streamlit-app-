@@ -3,21 +3,37 @@ from backtrader.indicators import BollingerBands
 import math
 
 
-class BolingerBandStrategy(bt.Strategy):
+class BollingerBandStrategy(bt.Strategy):
     params = (("period", 20), ("devfactor", 2), ("order_percentage", 1))
 
     def __init__(self):
         self.bb = BollingerBands(period=self.params.period, devfactor=self.params.devfactor)
+        self.trade_signal = None
 
     def next(self):
+        cash = self.broker.get_cash()
+
+        size = cash / self.data.close[0]
+
+        size = round(size, 6)
+
         if self.position.size == 0:
             if self.data.close[0] > self.bb.lines.top[0]:
-                amount_to_invest = self.params.order_percentage * self.broker.cash
-                self.size = math.floor(amount_to_invest / self.data.close[0])
-                self.buy(size=self.size)
+                # amount_to_invest = self.params.order_percentage * self.broker.cash
+                # self.size = math.floor(amount_to_invest / self.data.close[0])
+                self.buy(size=size)
+                self.trade_signal = "BUY"
+            else:
+                self.trade_signal = "NONE"
         else:
             if self.data.close[0] < self.bb.lines.bot[0]:
                 self.close()
+                self.trade_signal = "SELL"
+            else:
+                self.trade_signal = "NONE"
+
+    def get_signal(self):
+        return self.trade_signal
 
     # def notify_order(self, order):
     #     if order.status in [order.Completed]:
