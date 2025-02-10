@@ -10,29 +10,30 @@ import numpy as np
 # from trailing_macd_strategy import MACDStrategyTrailingSL
 from sl_tp_macd_strategy import MACDStrategySLTP
 from sma_cross_strategy import SMACrossStrategy
+from scavenger import ScavengerStrategy
 
-exchange1 = ccxt.binance({
-    "apiKey": config2.SUB_BB_API_KEY,
-    "secret": config2.SUB_BB_API_SECRET,
+exchange_a1 = ccxt.binance({
+    "apiKey": config2.SUB_A1_API_KEY,
+    "secret": config2.SUB_A1_SECRET_KEY,
     'enableRateLimit': True,
     "timeout": 30000,
 })
 
-exchange2 = ccxt.binance({
-    "apiKey": config2.SUB_EMA_API_KEY,
-    "secret": config2.SUB_EMA_API_SECRET,
+exchange_a2 = ccxt.binance({
+    "apiKey": config2.SUB_A2_API_KEY,
+    "secret": config2.SUB_A2_SECRET_KEY,
     'enableRateLimit': True,
     "timeout": 30000,
 })
 
-exchange3 = ccxt.binance({
+exchange_a3 = ccxt.binance({
     "apiKey": config2.SUB_A3_API_KEY,
     "secret": config2.SUB_A3_API_SECRET,
     'enableRateLimit': True,
     "timeout": 30000,
 })
 
-exchange4 = ccxt.binance({
+exchange_main = ccxt.binance({
     "apiKey": config2.MAIN_API_KEY,
     "secret": config2.MAIN_API_SECRET,
     'enableRateLimit': True,
@@ -40,9 +41,9 @@ exchange4 = ccxt.binance({
 })
 
 symbol = "BTC/EUR"
-symbol2 = "BCH/EUR"
-symbol3 = "AIXBT/USDC"
-symbol4 = "ETH/EUR"
+symbol2 = "ETH/EUR"
+symbol3 = "BNB/EUR"
+symbol4 = "SOL/EUR"
 
 # Nastavenie tak, aby sa vypisovali všetky riadky
 pd.set_option('display.max_rows', None)
@@ -51,23 +52,7 @@ pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 
 
-def get_data(exchange, symbol, retries=5, delay=2):
-    """
-    Funkcia na získanie OHLCV dát pre zvolený symbol z Binance a ich konverzia na DataFrame.
-
-    Args:
-        symbol (str): Symbol obchodného páru (napr. 'BTC/USDT').
-        retries (int): Počet pokusov o získanie dát pri chybe.
-        delay (int): Čas (v sekundách) medzi jednotlivými pokusmi.
-
-    Returns:
-        pd.DataFrame: DataFrame obsahujúci stĺpce:
-                      ['timestamp', 'open', 'high', 'low', 'close', 'volume'].
-    """
-
-    timeframe = "5m"  # Časový rámec pre sviečky
-    limit = 450  # Počet sviečok na získanie
-
+def get_data(exchange, symbol, timeframe, limit, retries=5, delay=2):
     for attempt in range(retries):
         try:
             # Pokus o získanie dát z Binance
@@ -102,8 +87,7 @@ def get_data(exchange, symbol, retries=5, delay=2):
     raise Exception(f"Failed to fetch data for symbol after {retries} retries.")
 
 
-def truncate_to_three_decimals(number, decimal_places):
-    # Premena čísla na string
+def truncate_to_three_decimals(number, decimal_places):  # Premenovať túto funkciu
     num_str = str(number)
     # Nájdeme pozíciu desatinnej bodky
     decimal_index = num_str.find('.')
@@ -117,16 +101,6 @@ def truncate_to_three_decimals(number, decimal_places):
 
 
 def calculate_rsi(data, period=14):
-    """
-    Funkcia na výpočet RSI (Relative Strength Index) s knižnicou Pandas.
-
-    Args:
-        data (pd.DataFrame): DataFrame s cenami, musí obsahovať stĺpec 'close'.
-        period (int): Počet období pre výpočet RSI.
-
-    Returns:
-        pd.Series: RSI hodnoty.
-    """
     # Výpočet rozdielu uzatváracích cien
     delta = data['close'].diff()
 
@@ -146,18 +120,6 @@ def calculate_rsi(data, period=14):
 
 
 def calculate_macd(data, short_window=12, long_window=26, signal_window=9):
-    """
-    Vypočíta MACD (Moving Average Convergence Divergence) a signálnu líniu.
-
-    Parametre:
-    - data: DataFrame s cenami, očakáva sa stĺpec 'Close'.
-    - short_window: Perióda pre krátkodobý EMA.
-    - long_window: Perióda pre dlhodobý EMA.
-    - signal_window: Perióda pre signálnu líniu.
-
-    Výstup:
-    - DataFrame s pridanými stĺpcami 'MACD' a 'Signal_Line'.
-    """
     # Výpočet exponenciálnych kĺzavých priemerov
     short_ema = data['close'].ewm(span=short_window, adjust=False).mean()
     long_ema = data['close'].ewm(span=long_window, adjust=False).mean()
@@ -183,49 +145,91 @@ def bullish_engulfing_candle(last_closed_candle, prev_closed_candle):
     return is_bullish_engulfing
 
 
-def run_strategy_for_account(exchange, strategy, symbol):
+def run_strategy_for_account(exchange, strategy, symbol, timeframe, limit):
     while True:
         try:
-            data = get_data(exchange, symbol)
+            data = get_data(exchange, symbol, timeframe, limit)
             strategy(data, symbol)
         except Exception as e:
             print(f"Error in strategy execution: {e}")
-        time.sleep(60 * 5)  # Spustenie každých 5 minút
+        time.sleep(60 * 2.5)
 
 
-# Inicializácia stratégie
-# macd_strategy_trailing_instance = MACDStrategyTrailingSL()
-sl_tp_macd_strategy_instance = MACDStrategySLTP()
-sma_cross_strategy_instance = SMACrossStrategy()
+# Inicializácia stratégií
+sl_tp_macd_strategy_instance_main = MACDStrategySLTP(6)
+sl_tp_macd_strategy_instance_a1 = MACDStrategySLTP(5)
+
+scavenger_instance_main = ScavengerStrategy(6)
+scavenger_instance_a1 = ScavengerStrategy(5)
+scavenger_instance_a2 = ScavengerStrategy(3)
+scavenger_instance_a3 = ScavengerStrategy(3)
 
 # Spustenie stratégie vo vláknach
 thread1 = threading.Thread(target=run_strategy_for_account, args=(
-    exchange4,  # Rovnaký podúčet na sťahovanie dát všade
-    lambda df, symbol4: sl_tp_macd_strategy_instance.execute(df, symbol4, f"macd_strategy_main - ETH/EUR",
-        exchange4, truncate_to_three_decimals, calculate_macd, "EUR", "ETH"),
-    symbol4  # Rozličný symbol, o ktorom dáta sťahujeme
+    exchange_main,
+    lambda df, symbol: sl_tp_macd_strategy_instance_main.execute(
+        df,
+        symbol,
+        f"sl_tp_macd_strategy - BTC/EUR",
+        exchange_main,
+        truncate_to_three_decimals,
+        calculate_macd,
+        "EUR",
+        "BTC"),
+    symbol, "15m", 480
 ))
 
 thread2 = threading.Thread(target=run_strategy_for_account, args=(
-    exchange3,  # Rovnaký podúčet na sťahovanie dát všade
-    lambda df, symbol: sl_tp_macd_strategy_instance.execute(df, symbol, f"macd_strategy_a3 - BTC/EUR",
-        exchange3, truncate_to_three_decimals, calculate_macd, "EUR", "BTC"),
-    symbol  # Rozličný symbol, o ktorom dáta sťahujeme
+    exchange_a1,
+    lambda df, symbol2: sl_tp_macd_strategy_instance_a1.execute(
+        df,
+        symbol2,
+        f"sl_tp_macd_strategy - ETH/EUR",
+        exchange_a1,
+        truncate_to_three_decimals,
+        calculate_macd,
+        "EUR",
+        "ETH"),
+    symbol2, "15m", 480
 ))
 
-# thread3 = threading.Thread(target=run_strategy_for_account, args=(
-#     exchange2,
-#     lambda df, symbol: sl_tp_macd_strategy_instance.execute(df, symbol, f"macd_strategy - {symbol3}", exchange2, truncate_to_three_decimals, calculate_macd),
-#     symbol3
-# ))
+thread3 = threading.Thread(target=run_strategy_for_account, args=(
+    exchange_a2,
+    lambda df, symbol3: scavenger_instance_a2.execute(
+        df,
+        symbol3,
+        f"scavenger_strategy - BNB/EUR",
+        exchange_a2,
+        truncate_to_three_decimals,
+        calculate_macd,
+        "EUR",
+        "BNB"),
+    symbol3, "30m", 480
+))
+
+thread4 = threading.Thread(target=run_strategy_for_account, args=(
+    exchange_a3,
+    lambda df, symbol4: scavenger_instance_a3.execute(
+        df,
+        symbol4,
+        f"scavenger_strategy - SOL/EUR",
+        exchange_a3,
+        truncate_to_three_decimals,
+        calculate_macd,
+        "EUR",
+        "SOL"),
+    symbol4, "30m", 480
+))
 
 # Spustenie vlákien paralelne
 thread1.start()
 thread2.start()
-# thread3.start()
+thread3.start()
+thread4.start()
 
-# Čaká na dokončenie oboch vlákien
+# Čakanie na dokončenie vlákien
 thread1.join()
 thread2.join()
-# thread3.join()
+thread3.join()
+thread4.join()
 

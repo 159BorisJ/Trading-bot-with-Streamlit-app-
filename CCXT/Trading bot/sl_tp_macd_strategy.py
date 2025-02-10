@@ -3,13 +3,15 @@ import pytz
 
 
 class MACDStrategySLTP:
-    def __init__(self):
+    def __init__(self, decimal_places):
         self.stop_loss_price = None
         self.take_profit_price = None
         self.macd_strategy_sl_tp_position = 0
-        self.decimal_places = 8  # 8 dsatiných miest pre Bitcoin
+        self.decimal_places = decimal_places
 
-    def execute(self, df, symbol, account_name, exchange, truncate_function, calculate_macd, buy_with_coin, sell_coin):
+    def execute(self, df, symbol, account_name, exchange, truncate_function,
+                calculate_macd, buy_with_coin, sell_coin):
+
         calculate_macd(df)
 
         # Získanie aktuálneho UTC času
@@ -47,8 +49,8 @@ class MACDStrategySLTP:
         ticker = exchange.fetch_ticker(symbol)
         current_price = float(ticker['last'])
 
-        stop_loss_percent = 1.2
-        take_profit_percent = 2.2
+        stop_loss_percent = 1.8
+        take_profit_percent = 2.5
 
         # Kúpna podmienka
         if (self.macd_strategy_sl_tp_position == 0 and
@@ -61,8 +63,8 @@ class MACDStrategySLTP:
                 sub_account_money_balance > 10):
 
             buy_order = exchange.create_order(symbol, 'market', 'buy', adjusted_amount_to_buy)
-            self.stop_loss_price = current_price * (1 - stop_loss_percent / 100)  # Nastavenie stop loss ceny
-            self.take_profit_price = current_price * (1 + take_profit_percent / 100)  # Nastavenie take profit ceny
+            self.stop_loss_price = current_price * (1 - stop_loss_percent / 100)
+            self.take_profit_price = current_price * (1 + take_profit_percent / 100)
             self.macd_strategy_sl_tp_position = 1
             print("**********")
             print(f"{account_name} Kúpené za cenu: {current_price}, Stop loss: {self.stop_loss_price}")
@@ -70,7 +72,13 @@ class MACDStrategySLTP:
             print("**********")
 
         # Predajná podmienka
-        if self.macd_strategy_sl_tp_position == 1 and current_price <= self.stop_loss_price and amount_to_sell > 0:
+        if ((self.macd_strategy_sl_tp_position == 1 and
+             current_price <= self.stop_loss_price and
+             amount_to_sell > 0)
+                or (self.macd_strategy_sl_tp_position == 1 and
+                    current_price >= self.take_profit_price and
+                    amount_to_sell > 0)):
+
             sell_order = exchange.create_order(symbol, 'market', 'sell', amount_to_sell)
             self.macd_strategy_sl_tp_position = 0
             self.stop_loss_price = None

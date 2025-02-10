@@ -49,7 +49,7 @@ cryptos = [
     "BTC-USD", "ETH-USD", "BNB-USD", "ADA-USD", "XRP-USD", "SOL-USD", "DOGE-USD",
     "DOT-USD", "MATIC-USD", "LTC-USD", "TRX-USD", "AVAX-USD", "UNI-USD",
     "LINK-USD", "XLM-USD", "ATOM-USD", "ALGO-USD", "FIL-USD", "VET-USD", "ICP-USD",
-    "APE-USD", "GRT-USD", "NEAR-USD", "FTM-USD", "SAND-USD", "AXS-USD", "THETA-USD",
+    "APE-USD", "GRT-USD", "NEAR-USD", "FTM-USD", "THETA-USD",
     "EGLD-USD", "HBAR-USD", "MANA-USD", "LEO-USD", "QNT-USD", "CAKE-USD", "EOS-USD",
     "RUNE-USD", "KAVA-USD", "ENJ-USD", "ONE-USD", "CHZ-USD", "ZIL-USD", "BAT-USD",
     "KSM-USD", "CRO-USD", "WBTC-USD", "LRC-USD", "CELO-USD", "MKR-USD", "YFI-USD",
@@ -60,7 +60,7 @@ cryptos = [
     "BTT-USD", "STX-USD", "COTI-USD", "NEO-USD", "RVN-USD", "ZEC-USD", "DASH-USD",
     "XMR-USD", "SC-USD", "XEM-USD", "ONT-USD", "IOST-USD", "GNO-USD", "BNT-USD",
     "CVC-USD", "SXP-USD", "NEXO-USD", "OGN-USD", "TWT-USD", "DYDX-USD", "CHSB-USD",
-    "ALPHA-USD", "POLY-USD", "RNDR-USD", "MINA-USD"
+    "ALPHA-USD", "POLY-USD", "RNDR-USD", "MINA-USD", "SAND-USD", "AXS-USD"
 ]
 
 strategies = [
@@ -75,7 +75,7 @@ data = []
 
 # Naplnenie riadkov tabuľky
 for c in comodities:
-    row = {"comodities": c}  # Pridaj názov komodity do stĺpca "comodities"
+    row = {"comodities": c}  # Pridanie názvu komodity do stĺpca "comodities"
     for s in strategies:
         row[s.__name__] = 0  # Inicializácia výsledkov pre každú stratégiu
     data.append(row)

@@ -4,7 +4,7 @@ import math
 
 
 class BollingerBandStrategy(bt.Strategy):
-    params = (("period", 20), ("devfactor", 2), ("order_percentage", 1))
+    params = ("period", 20), ("devfactor", 2), ("order_percentage", 1)
 
     def __init__(self):
         self.bb = BollingerBands(period=self.params.period, devfactor=self.params.devfactor)
@@ -12,21 +12,22 @@ class BollingerBandStrategy(bt.Strategy):
 
     def next(self):
         cash = self.broker.get_cash()
+        close_price = self.data.close[0]
 
-        size = cash / self.data.close[0]
-
-        size = round(size, 6)
+        # Ochrana proti deleniu nulou a extrémne nízkym cenám
+        if close_price > 0.01:
+            size = round(cash / close_price, 6)
+        else:
+            size = 0
 
         if self.position.size == 0:
-            if self.data.close[0] > self.bb.lines.top[0]:
-                # amount_to_invest = self.params.order_percentage * self.broker.cash
-                # self.size = math.floor(amount_to_invest / self.data.close[0])
+            if close_price > self.bb.lines.top[0] and size > 0:
                 self.buy(size=size)
                 self.trade_signal = "BUY"
             else:
                 self.trade_signal = "NONE"
         else:
-            if self.data.close[0] < self.bb.lines.bot[0]:
+            if close_price < self.bb.lines.bot[0]:
                 self.close()
                 self.trade_signal = "SELL"
             else:
