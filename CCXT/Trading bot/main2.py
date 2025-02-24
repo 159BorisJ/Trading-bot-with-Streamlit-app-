@@ -11,6 +11,7 @@ import numpy as np
 from sl_tp_macd_strategy import MACDStrategySLTP
 from sma_cross_strategy import SMACrossStrategy
 from scavenger import ScavengerStrategy
+from trailing_sl_macd_strategy import TrailingSLMACDStrategy
 
 exchange_a1 = ccxt.binance({
     "apiKey": config2.SUB_A1_API_KEY,
@@ -43,7 +44,7 @@ exchange_main = ccxt.binance({
 symbol = "BTC/EUR"
 symbol2 = "ETH/EUR"
 symbol3 = "BNB/EUR"
-symbol4 = "SOL/EUR"
+symbol4 = "ADA/EUR"
 
 # Nastavenie tak, aby sa vypisovali všetky riadky
 pd.set_option('display.max_rows', None)
@@ -100,23 +101,23 @@ def truncate_to_three_decimals(number, decimal_places):  # Premenovať túto fun
     return float(truncated_str)
 
 
-def calculate_rsi(data, period=14):
-    # Výpočet rozdielu uzatváracích cien
-    delta = data['close'].diff()
-
-    # Oddelenie rastov a poklesov
-    gain = np.where(delta > 0, delta, 0)
-    loss = np.where(delta < 0, -delta, 0)
-
-    # Výpočet priemerných ziskov a strát
-    avg_gain = pd.Series(gain).rolling(window=period, min_periods=period).mean()
-    avg_loss = pd.Series(loss).rolling(window=period, min_periods=period).mean()
-
-    # Výpočet RSI
-    rs = avg_gain / avg_loss
-    rsi = 100 - (100 / (1 + rs))
-
-    return rsi.round(2)
+# def calculate_rsi(data, period=14):
+#     # Výpočet rozdielu uzatváracích cien
+#     delta = data['close'].diff()
+#
+#     # Oddelenie rastov a poklesov
+#     gain = np.where(delta > 0, delta, 0)
+#     loss = np.where(delta < 0, -delta, 0)
+#
+#     # Výpočet priemerných ziskov a strát
+#     avg_gain = pd.Series(gain).rolling(window=period, min_periods=period).mean()
+#     avg_loss = pd.Series(loss).rolling(window=period, min_periods=period).mean()
+#
+#     # Výpočet RSI
+#     rs = avg_gain / avg_loss
+#     rsi = 100 - (100 / (1 + rs))
+#
+#     return rsi.round(2)
 
 
 def calculate_macd(data, short_window=12, long_window=26, signal_window=9):
@@ -133,16 +134,16 @@ def calculate_macd(data, short_window=12, long_window=26, signal_window=9):
     return data
 
 
-def bullish_engulfing_candle(last_closed_candle, prev_closed_candle):
-    is_bullish_engulfing = False
-
-    if (prev_closed_candle["close"] < prev_closed_candle["open"] and      # Predchádzajúca sviečka je červená
-            last_closed_candle["close"] > last_closed_candle["open"] and  # Posledná sviečka je zelená
-            last_closed_candle["open"] < prev_closed_candle["close"] and  # Otvorenie pod zatvorením predchádzajúcej sviečky
-            last_closed_candle["close"] > prev_closed_candle["open"]):    # Zatvorenie nad otvorením predchádzajúcej sviečky
-        is_bullish_engulfing = True
-
-    return is_bullish_engulfing
+# def bullish_engulfing_candle(last_closed_candle, prev_closed_candle):
+#     is_bullish_engulfing = False
+#
+#     if (prev_closed_candle["close"] < prev_closed_candle["open"] and      # Predchádzajúca sviečka je červená
+#             last_closed_candle["close"] > last_closed_candle["open"] and  # Posledná sviečka je zelená
+#             last_closed_candle["open"] < prev_closed_candle["close"] and  # Otvorenie pod zatvorením predchádzajúcej sviečky
+#             last_closed_candle["close"] > prev_closed_candle["open"]):    # Zatvorenie nad otvorením predchádzajúcej sviečky
+#         is_bullish_engulfing = True
+#
+#     return is_bullish_engulfing
 
 
 def run_strategy_for_account(exchange, strategy, symbol, timeframe, limit):
@@ -158,19 +159,21 @@ def run_strategy_for_account(exchange, strategy, symbol, timeframe, limit):
 # Inicializácia stratégií
 sl_tp_macd_strategy_instance_main = MACDStrategySLTP(6)
 sl_tp_macd_strategy_instance_a1 = MACDStrategySLTP(5)
+sl_tp_macd_strategy_instance_a2 = MACDStrategySLTP(3)
+sl_tp_macd_strategy_instance_a3 = MACDStrategySLTP(3)
 
-scavenger_instance_main = ScavengerStrategy(6)
-scavenger_instance_a1 = ScavengerStrategy(5)
-scavenger_instance_a2 = ScavengerStrategy(3)
-scavenger_instance_a3 = ScavengerStrategy(3)
+trailing_macd_instance_main = TrailingSLMACDStrategy(6)
+trailing_macd_instance_a1 = TrailingSLMACDStrategy(5)
+trailing_macd_instance_a2 = TrailingSLMACDStrategy(3)
+trailing_macd_instance_a3 = TrailingSLMACDStrategy(3)
 
 # Spustenie stratégie vo vláknach
 thread1 = threading.Thread(target=run_strategy_for_account, args=(
     exchange_main,
-    lambda df, symbol: sl_tp_macd_strategy_instance_main.execute(
+    lambda df, symbol: trailing_macd_instance_main.execute(
         df,
         symbol,
-        f"sl_tp_macd_strategy - BTC/EUR",
+        f"trailing_macd_strategy - BTC/EUR",
         exchange_main,
         truncate_to_three_decimals,
         calculate_macd,
@@ -181,10 +184,10 @@ thread1 = threading.Thread(target=run_strategy_for_account, args=(
 
 thread2 = threading.Thread(target=run_strategy_for_account, args=(
     exchange_a1,
-    lambda df, symbol2: sl_tp_macd_strategy_instance_a1.execute(
+    lambda df, symbol2: trailing_macd_instance_a1.execute(
         df,
         symbol2,
-        f"sl_tp_macd_strategy - ETH/EUR",
+        f"trailing_macd_strategy - ETH/EUR",
         exchange_a1,
         truncate_to_three_decimals,
         calculate_macd,
@@ -195,30 +198,30 @@ thread2 = threading.Thread(target=run_strategy_for_account, args=(
 
 thread3 = threading.Thread(target=run_strategy_for_account, args=(
     exchange_a2,
-    lambda df, symbol3: scavenger_instance_a2.execute(
+    lambda df, symbol3: sl_tp_macd_strategy_instance_a2.execute(
         df,
         symbol3,
-        f"scavenger_strategy - BNB/EUR",
+        f"sl_tp_macd_strategy - BNB/EUR",
         exchange_a2,
         truncate_to_three_decimals,
         calculate_macd,
         "EUR",
         "BNB"),
-    symbol3, "30m", 480
+    symbol3, "15m", 480
 ))
 
 thread4 = threading.Thread(target=run_strategy_for_account, args=(
     exchange_a3,
-    lambda df, symbol4: scavenger_instance_a3.execute(
+    lambda df, symbol4: sl_tp_macd_strategy_instance_a3.execute(
         df,
         symbol4,
-        f"scavenger_strategy - SOL/EUR",
+        f"sl_tp_macd_strategy - ADA/EUR",
         exchange_a3,
         truncate_to_three_decimals,
         calculate_macd,
         "EUR",
-        "SOL"),
-    symbol4, "30m", 480
+        "ADA"),
+    symbol4, "15m", 480
 ))
 
 # Spustenie vlákien paralelne
